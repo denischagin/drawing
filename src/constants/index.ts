@@ -1,1 +1,0 @@
-export { componentByType } from './figure'

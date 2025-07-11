@@ -7,20 +7,14 @@ export type TFigureBase = {
   x: number
   y: number
   fill: string
-}
-
-export type TRect = TFigureBase & {
-  type: 'rect'
+  rotatationDeg: number
+  cornerRadius: number
   width: number
   height: number
+  text: string
 }
 
-export type TCircle = TFigureBase & {
-  type: 'circle'
-  radius: number
-}
-
-export type TFigureItem = TRect | TCircle
+export type TFigureItem = TFigureBase
 
 export type TFiguresListState = TFigureItem[]
 

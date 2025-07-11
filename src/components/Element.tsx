@@ -1,11 +1,10 @@
-import { componentByType } from '@/constants'
-import { changeFigurePos, getTextPosition } from '@/helpers'
+import { getTextPosition } from '@/helpers'
 import { getTextSize } from '@/helpers/text'
 import type { TFigureItem } from '@/types'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
-import { Fragment, useEffect, useRef, type FC, type RefObject } from 'react'
-import { Text, Transformer } from 'react-konva'
+import { Fragment, useEffect, useRef, type FC } from 'react'
+import { Rect, Text, Transformer } from 'react-konva'
 
 export type ElementProps = TFigureItem & {
   onChange?: (newFigures: TFigureItem) => void
@@ -16,7 +15,6 @@ export type ElementProps = TFigureItem & {
 
 export const Element: FC<ElementProps> = (props) => {
   const { id, onChange, figures, isSelected, onSelect, ...figure } = props
-  const Component = componentByType[figure.type]
 
   const shapeRef = useRef<Konva.Node>(null)
   const trRef = useRef<Konva.Transformer>(null)
@@ -39,7 +37,7 @@ export const Element: FC<ElementProps> = (props) => {
 
   return (
     <Fragment key={id}>
-      <Component
+      <Rect
         {...figure}
         ref={shapeRef as any}
         onDragEnd={(e) => handleChangeFigurePos(id, e)}
@@ -48,37 +46,30 @@ export const Element: FC<ElementProps> = (props) => {
         stroke="black"
         onClick={onSelect}
         strokeWidth={2}
-        onTransformEnd={(e) => {
-          // transformer is changing scale of the node
-          // and NOT its width or height
-          // but in the store we have only width and height
-          // to match the data better we will reset scale on transform end
+        cornerRadius={figure.cornerRadius}
+        onTransform={() => {
           const node = shapeRef.current
           if (node === null) return
           const scaleX = node.scaleX()
           const scaleY = node.scaleY()
-
-          // we will reset it back
-          node.scaleX(1)
-          node.scaleY(1)
+          const x = node.x()
+          const y = node.y()
+          const rotation = node.rotation()
 
           onChange &&
             onChange({
               id,
               ...figure,
-              x: node.x(),
-              y: node.y(),
-              ...(figure.type === 'rect'
-                ? {
-                    width: Math.max(5, node.width() * scaleX),
-                    height: Math.max(node.height() * scaleY),
-                  }
-                : { radius: Math.max(5, (node.width() / 2) * scaleX) }),
+              x: x,
+              y: y,
+              rotatationDeg: rotation,
+              width: Math.max(5, node.width() * scaleX),
+              height: Math.max(5, node.height() * scaleY),
             })
         }}
       />
       <Text
-        text="hello world"
+        text={figure.text}
         x={textPosition.x}
         y={textPosition.y}
         width={textSize.width}
@@ -86,6 +77,7 @@ export const Element: FC<ElementProps> = (props) => {
         align="center"
         verticalAlign="middle"
         listening={false}
+        rotationDeg={figure.rotatationDeg}
         padding={3}
       />
       {isSelected && (
