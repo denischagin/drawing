@@ -16,7 +16,9 @@ export type TFigureBase = {
 
 export type TFigureItem = TFigureBase
 
-export type TFiguresListState = TFigureItem[]
+export type TFiguresListState = {
+  figuresList: TFigureItem[]
+}
 
 export type TComponentByType = {
   rect: typeof Rect
