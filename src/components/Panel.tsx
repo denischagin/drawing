@@ -31,7 +31,7 @@ export const Panel = () => {
         y: e.clientY,
         cornerRadius:
           selectedFigureId === 'circle'
-            ? Infinity
+            ? 999999999
             : DEFAULT_FIGURE.cornerRadius,
       }
       addFigure(addedFigure)
@@ -64,6 +64,7 @@ export const Panel = () => {
       left="0"
       width="100%"
       padding="6px 50px"
+      pointerEvents="none"
     >
       <Box
         background="white"
@@ -73,6 +74,7 @@ export const Panel = () => {
         display="flex"
         gap="2px"
         borderRadius="lg"
+        pointerEvents="all"
       >
         {panelItems.map((panelItem) => {
           const IconComponent = panelItem.icon

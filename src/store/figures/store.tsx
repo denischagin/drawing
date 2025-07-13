@@ -55,6 +55,7 @@ const $figuresState = createStore<TFiguresListState>(initialState)
 
 const setFigures = createEvent<TFigureItem[]>()
 const addFigure = createEvent<TFigureItem>()
+const removeFigure = createEvent<number>()
 
 $figuresState
   .on(setFigures, (_, newFigures) => ({
@@ -63,6 +64,16 @@ $figuresState
   .on(addFigure, (state, newFigure) => ({
     figuresList: [...state.figuresList, newFigure],
   }))
+  .on(removeFigure, (state, figureId) => {
+    const newFigures = state.figuresList.filter(
+      (figure) => figure.id !== figureId,
+    )
+
+    return {
+      figuresList: newFigures,
+    }
+  })
 
 export const useFiguresState = () => useUnit($figuresState)
-export const useFiguresEvents = () => useUnit({ setFigures, addFigure })
+export const useFiguresEvents = () =>
+  useUnit({ setFigures, addFigure, removeFigure })
