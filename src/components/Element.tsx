@@ -47,6 +47,13 @@ export const Element: FC<ElementProps> = (props) => {
         onClick={onSelect}
         strokeWidth={2}
         cornerRadius={figure.cornerRadius}
+        rotationDeg={figure.rotatationDeg}
+        onTransformEnd={() => {
+          const node = shapeRef.current
+          if (node === null) return
+          node.scaleX(1)
+          node.scaleY(1)
+        }}
         onTransform={() => {
           const node = shapeRef.current
           if (node === null) return
@@ -63,8 +70,8 @@ export const Element: FC<ElementProps> = (props) => {
               x: x,
               y: y,
               rotatationDeg: rotation,
-              width: Math.max(5, node.width() * scaleX),
-              height: Math.max(5, node.height() * scaleY),
+              width: node.width() * scaleX,
+              height: node.height() * scaleY,
             })
         }}
       />
@@ -85,7 +92,6 @@ export const Element: FC<ElementProps> = (props) => {
           ref={trRef}
           flipEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {
-            // limit resize
             if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
               return oldBox
             }

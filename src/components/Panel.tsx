@@ -1,6 +1,9 @@
+import { DEFAULT_FIGURE } from '@/constants'
+import { useFieldEvents } from '@/store/field'
+import { useFiguresEvents } from '@/store/figures'
 import { usePanelEvents, usePanelState } from '@/store/panel'
 import { Button, Box } from '@chakra-ui/react'
-import type { MouseEvent } from 'react'
+import { useEffect, type MouseEvent as MouseEventReact } from 'react'
 import type { IconType } from 'react-icons'
 import { RiRectangleLine, RiCircleLine } from 'react-icons/ri'
 
@@ -13,14 +16,43 @@ const panelItems: TPanelItem[] = [
 
 export const Panel = () => {
   const { selectedFigureId } = usePanelState()
-  const { selectFigure } = usePanelEvents()
+  const { selectFigure: selectPanelFigure, setSelectedFigure } =
+    usePanelEvents()
 
+  const { addFigure } = useFiguresEvents()
+  const { selectFigure } = useFieldEvents()
+
+  useEffect(() => {
+    const handleAddFigure = (e: MouseEvent) => {
+      const addedFigure = {
+        id: Date.now(),
+        ...DEFAULT_FIGURE,
+        x: e.clientX,
+        y: e.clientY,
+        cornerRadius:
+          selectedFigureId === 'circle'
+            ? Infinity
+            : DEFAULT_FIGURE.cornerRadius,
+      }
+      addFigure(addedFigure)
+      selectFigure(addedFigure.id)
+      setSelectedFigure(null)
+    }
+
+    if (selectedFigureId) {
+      document.addEventListener('click', handleAddFigure)
+    } else {
+      document.removeEventListener('click', handleAddFigure)
+    }
+
+    return () => document.removeEventListener('click', handleAddFigure)
+  }, [selectedFigureId])
   const handleItemClick = (
-    e: MouseEvent<HTMLButtonElement>,
+    e: MouseEventReact<HTMLButtonElement>,
     panelItem: TPanelItem,
   ) => {
     e.stopPropagation()
-    selectFigure(panelItem.id)
+    selectPanelFigure(panelItem.id)
   }
 
   return (

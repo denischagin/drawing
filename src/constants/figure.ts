@@ -2,7 +2,7 @@ import type { TFigureItem } from '@/types'
 
 export const DEFAULT_FIGURE: Omit<TFigureItem, 'id'> = {
   cornerRadius: 10,
-  fill: 'transparent',
+  fill: '#ffffff',
   rotatationDeg: 0,
   text: 'Text',
   height: 100,

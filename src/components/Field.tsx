@@ -10,6 +10,8 @@ export const Field: React.FC = () => {
   const { selectedFigureId } = useFieldState()
   const { selectFigure } = useFieldEvents()
 
+  // console.log(figuresList)
+
   return (
     <Stage
       width={window.innerWidth}
