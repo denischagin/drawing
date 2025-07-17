@@ -37,7 +37,6 @@ export const Field: React.FC = () => {
 
       const text = e.clipboardData.getData('text')
 
-      console.log(text)
       const parsedFigure = parseAndValidateFigure(text)
       if (!parsedFigure) return
 

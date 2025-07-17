@@ -12,7 +12,7 @@ const initialState: TFiguresListState = {
       height: 100,
       fill: '#ffffff',
       rotatationDeg: 0,
-      cornerRadius: Infinity,
+      cornerRadius: 9999999999999999999999,
       text: 'hello',
     },
     {

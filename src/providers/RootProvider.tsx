@@ -1,12 +1,16 @@
 import { ChakraProvider } from '@chakra-ui/react'
 import type { FC, ReactNode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AppRouter } from '@/providers/AppRouter'
 
-export type RootProviderProps = {
-  children: ReactNode
-}
+const queryClient = new QueryClient()
 
-export const RootProvider: FC<RootProviderProps> = (props) => {
-  const { children } = props
-
-  return <ChakraProvider>{children}</ChakraProvider>
+export const RootProvider: FC<{}> = ({}) => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ChakraProvider>
+        <AppRouter />
+      </ChakraProvider>
+    </QueryClientProvider>
+  )
 }
