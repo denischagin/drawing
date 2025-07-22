@@ -54,3 +54,28 @@ export const parseAndValidateFigure = (
     return null
   }
 }
+
+export const parseAndValidateFiguresList = (
+  figuresString: string,
+): TFigureItem[] | null => {
+  try {
+    const parsed = JSON.parse(figuresString)
+    if (!Array.isArray(parsed)) return null
+
+    const parsedFiguresList = parsed.map((item) => {
+      return JSON.parse(item)
+    })
+
+    console.log(parsedFiguresList)
+    if (
+      parsedFiguresList.every((item) => {
+        return isFigure(item)
+      })
+    ) {
+      return parsedFiguresList
+    }
+    return null
+  } catch (e) {
+    return null
+  }
+}

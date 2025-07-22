@@ -7,13 +7,18 @@ export type TUseWebsocketHandlers = {
   onOpen: ((this: WebSocket, ws: WebSocket, ev: Event) => any) | null
 }
 
+export type TUseWebsocketReturn = {
+  ws: WebSocket | null
+  open: () => void
+}
+
 export const useWebsocket = (
   url: string,
   handlers?: TUseWebsocketHandlers,
-): WebSocket | null => {
+): TUseWebsocketReturn => {
   const ws = useRef<WebSocket>(null)
 
-  useEffect(() => {
+  const open = () => {
     const wsConnect = new WebSocket(url)
     ws.current = wsConnect
     if (!handlers) return
@@ -25,7 +30,9 @@ export const useWebsocket = (
       handlers.onError?.call(wsConnect, wsConnect, ...args)
     ws.current.onmessage = (...args) =>
       handlers.onMessage?.call(wsConnect, wsConnect, ...args)
-  }, [])
+  }
 
-  return ws.current
+  useEffect(() => {}, [])
+
+  return { ws: ws.current, open }
 }

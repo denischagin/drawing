@@ -3,61 +3,91 @@ import { Box } from '@chakra-ui/react'
 import cellImg from '@/assets/cell.png'
 import { usePanelState } from '@/store/panel'
 import { Settings } from '@/components/Settings'
-import { useConnectWebsocket } from '@/hooks/api/websocket'
 import { useCreateRoom } from '@/hooks/api/room'
 import { useEffect, useRef } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { useFiguresEvents, useFiguresState } from '@/store/figures'
 import type { TWebsocketData } from '@/types'
 import { useWebsocket } from '@/hooks/use-websocket'
+import { parseAndValidateFiguresList } from '@/helpers/figure'
+import { useAdmin } from '@/hooks'
+import { STORAGE_KEYS } from '@/constants'
 
 export const RoomPage = () => {
+  const navigate = useNavigate()
+
   const { selectedFigureId } = usePanelState()
+  const { setFigures } = useFiguresEvents()
 
   const { roomId } = useParams()
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
-  useConnectWebsocket(!roomId)
   const { mutate: createRoom } = useCreateRoom()
 
+  const isAdmin = useAdmin()
+
+  const { ws, open: openWs } = useWebsocket('ws://localhost:9999/api/v1/ws', {
+    onOpen: (wsCtx) => {
+      console.log('ws opened')
+      if (!wsCtx || !roomId) return
+
+      const dataJoin: TWebsocketData = {
+        type: 'join',
+        roomID: roomId,
+      }
+      console.log('join room')
+      wsCtx.send(JSON.stringify(dataJoin))
+    },
+    onClose: () => {
+      console.log('ws closed')
+      openWs()
+    },
+    onError: () => console.log('ws error'),
+    onMessage: (_ws, e) => {
+      const parsedFigures = parseAndValidateFiguresList(e.data)
+
+      if (!parsedFigures) return
+      console.log(parsedFigures)
+      setFigures(parsedFigures)
+    },
+  })
+
   useEffect(() => {
-    if (roomId) return
-    createRoom()
+    if (roomId) {
+      openWs()
+      return
+    }
+
+    createRoom(undefined, {
+      onSuccess: (newRoomId) => {
+        openWs()
+        navigate(newRoomId)
+        sessionStorage.setItem('roomId', newRoomId)
+        console.log('navigate to room')
+        console.log('after create room')
+      },
+    })
   }, [])
 
   const { figuresList } = useFiguresState()
 
-  const ws = useWebsocket('ws://localhost:9999/api/v1/ws', {
-    onOpen: (wsCtx) => {
-      console.log('ws open', wsCtx)
-      if (!roomId || !wsCtx) return
-
-      const dataJoin: TWebsocketData = {
-        type: 'join',
-        room_id: roomId,
-      }
-      wsCtx.send(JSON.stringify(dataJoin))
-    },
-    onClose: () => console.log('ws closed'),
-    onError: () => console.log('ws error'),
-    onMessage: () => console.log('ws message'),
-  })
-
   useEffect(() => {
     if (!roomId || !ws) return
-    if (ws.readyState !== WebSocket.OPEN) return
+    if (!isAdmin) return
 
     const dataUpdate: TWebsocketData = {
       type: 'update',
-      room_id: roomId,
+      roomID: roomId,
       content: figuresList.map((figure) => JSON.stringify(figure)),
     }
 
     clearTimeout(timeoutRef.current)
 
+    sessionStorage.setItem(STORAGE_KEYS.figures, JSON.stringify(figuresList))
+
     timeoutRef.current = setTimeout(() => {
       ws.send(JSON.stringify(dataUpdate))
-    }, 500)
+    }, 100)
   }, [figuresList])
 
   return (
@@ -66,7 +96,7 @@ export const RoomPage = () => {
       width="100vw"
       cursor={selectedFigureId !== null ? 'cell' : 'default'}
     >
-      <Field />
+      <Field locked={!isAdmin} />
       <Panel />
       <Settings />
     </Box>

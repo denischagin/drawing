@@ -3,9 +3,15 @@ import { Layer, Stage, Transformer } from 'react-konva'
 import { Element } from '@/components/Element'
 import { useFieldEvents, useFieldState } from '@/store/field'
 import { useFiguresEvents, useFiguresState } from '@/store/figures'
-import { isFigure, parseAndValidateFigure } from '@/helpers/figure'
+import { parseAndValidateFigure } from '@/helpers/figure'
 
-export const Field: React.FC = () => {
+export type FieldProps = {
+  locked: boolean
+}
+
+export const Field: React.FC<FieldProps> = (props) => {
+  const { locked } = props
+
   const { figuresList } = useFiguresState()
   const { setFigures, removeFigure, addFigure } = useFiguresEvents()
   const { selectedFigureId } = useFieldState()
@@ -24,7 +30,7 @@ export const Field: React.FC = () => {
       removeFigure(selectedFigureId)
     }
 
-    const handleCopyFigure = async (e: ClipboardEvent) => {
+    const handleCopyFigure = async (_e: ClipboardEvent) => {
       const figure = figuresList.find(
         (figure) => figure.id === selectedFigureId,
       )
@@ -72,7 +78,7 @@ export const Field: React.FC = () => {
       width={canvasSize.width}
       height={canvasSize.height}
     >
-      <Layer>
+      <Layer draggable={!locked}>
         {figuresList.map((figure, figureIndex) => {
           return (
             <Element
